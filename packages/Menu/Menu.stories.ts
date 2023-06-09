@@ -74,7 +74,7 @@ const items = html`
 		<mo-menu-item slot='submenu'>Report Issue</mo-menu-item>
 		<mo-nested-menu-item slot='submenu'>
 			More
-			<mo-menu-item slot='submenu'>Open in New</mo-menu-item>
+			<mo-menu-item slot='submenu'>Open in Old</mo-menu-item>
 			<mo-menu-item slot='submenu'>Report Issue</mo-menu-item>
 		</mo-nested-menu-item>
 	</mo-nested-menu-item>

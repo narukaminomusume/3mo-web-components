@@ -3,6 +3,7 @@ import { FocusController } from '@3mo/focus-controller'
 import { SlotController } from '@3mo/slot-controller'
 import { Menu } from './Menu.js'
 import { MenuItem } from './MenuItem.js'
+import { List } from '@3mo/list'
 
 // TODO: [Popover] Keyboard Support missing
 // TODO: [Popover] Tests overall
@@ -20,7 +21,7 @@ export class NestedMenuItem extends MenuItem {
 
 	readonly focusController = new FocusController(this, {
 		handleChange: (focused, bubbled) => {
-			if (!bubbled && !(focused || this.hasCascadingFocus)) {
+			if (this.open && !bubbled && !(focused || this.hasCascadingFocus)) {
 				this.open = false
 			}
 		}
@@ -36,7 +37,7 @@ export class NestedMenuItem extends MenuItem {
 
 	@eventListener({ target: document, type: 'keydown' })
 	protected handleKeyDown(event: KeyboardEvent) {
-		if (!(this.focused || this.subMenu?.list.listItemsKeyboardController.hasFocus) || this.disabled) {
+		if (!(this.focused || this.subMenu?.list.listItemsKeyboardController?.hasFocus) || this.disabled) {
 			return
 		}
 
@@ -110,13 +111,15 @@ export class NestedMenuItem extends MenuItem {
 
 	protected handleOpenChange(open: boolean) {
 		this.open = open
-
-		// TODO: [Popover] Refactor
-		if (!this.subMenu?.list?.listItemsKeyboardController) {
-			return
+		if (!open) {
+			this.focus()
+		} else {
+			(this.parentElement as List).listItemsKeyboardController.unfocus(false)
 		}
 
-		if (this.open) {
+		// TODO: [Popover] Refactor
+
+		/*if (this.open) {
 			this.subMenu.focus()
 			this.subMenu.list.focus()
 			this.subMenu.list.listItemsKeyboardController.unfocus()
@@ -127,7 +130,7 @@ export class NestedMenuItem extends MenuItem {
 			this.blur()
 			//parentList.listItemsKeyboardController.unfocus()
 			this.focus()
-		}
+		}*/
 	}
 }
 

@@ -87,8 +87,10 @@ export class Menu extends Component {
 						x.open = false
 					}
 				})
+			} else {
+				this.list.focus()
+				this.list.listItemsKeyboardController.focus()
 			}
-			this.list.listItemsKeyboardController.forceFocused = this.open as boolean
 		}
 	}
 

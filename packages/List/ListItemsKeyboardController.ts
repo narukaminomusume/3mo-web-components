@@ -48,7 +48,11 @@ export class ListItemsKeyboardController extends Controller {
 		}
 
 		for (const item of this.items) {
-			item.toggleAttribute('focused', value !== undefined && this.getRenderedItemIndex(item) === value && this.isFocusable(item))
+			const willFocus = value !== undefined && this.getRenderedItemIndex(item) === value && this.isFocusable(item)
+			item.toggleAttribute('focused', willFocus)
+			if (willFocus) {
+				item.focus()
+			}
 		}
 	}
 
@@ -66,6 +70,7 @@ export class ListItemsKeyboardController extends Controller {
 	}
 
 	focusFirstItem() {
+		console.log('FIRST ITEM FOCUSED', this.host)
 		this.focusTraversal(0, 'forward')
 	}
 
@@ -74,6 +79,7 @@ export class ListItemsKeyboardController extends Controller {
 	}
 
 	focusNextItem() {
+		!this.focusedItemIndex && console.log('UNMANAGED TRAVERSAL!', this.host)
 		this.focusTraversal((this.focusedItemIndex ?? -1) + 1, 'forward')
 	}
 
@@ -82,7 +88,7 @@ export class ListItemsKeyboardController extends Controller {
 	}
 
 	private focusTraversal(index: number, direction: 'forward' | 'backward') {
-		let breakSafe = 0
+		/*let breakSafe = 0
 		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			if (breakSafe >= this.itemsLength) {
@@ -95,13 +101,34 @@ export class ListItemsKeyboardController extends Controller {
 				break
 			}
 			index = direction === 'forward' ? index + 1 : index - 1
-			index = index < 0 ? this.itemsLength - 1 : index % this.itemsLength
+			index = index % this.itemsLength
 			breakSafe++
+		}*/
+
+		let item: any = undefined
+		let i = (index + this.itemsLength) % this.itemsLength
+		for (undefined;
+			!(item && i === index) && !((item = this.getItem(i)) && this.isFocusable(item));
+			i = (i + this.itemsLength + (direction === 'forward' ? +1 : -1)) % this.itemsLength) {
+			continue
+		}
+
+		if (item && this.isFocusable(item)) {
+			this.focusedItemIndex = i
+			this.focus()
 		}
 	}
 
-	unfocus() {
+	focus() {
+		this.focusedItemIndex ?? this.focusFirstItem()
+		this.forceFocused = true
+	}
+
+	unfocus(force = true) {
 		this.focusedItemIndex = undefined
+		this.forceFocused = false
+		force && this.host.blur()
+		console.log('FOCUS LOST', this.host)
 	}
 
 	forceFocused = false
@@ -110,9 +137,9 @@ export class ListItemsKeyboardController extends Controller {
 		handleChange: (focused, bubbled) => {
 			if (!bubbled) {
 				if (focused) {
-					this.focusedItemIndex ??= 0
+					this.focus()
 				} else {
-					this.focusedItemIndex = undefined
+					this.unfocus()
 				}
 			}
 		},
@@ -133,9 +160,10 @@ export class ListItemsKeyboardController extends Controller {
 		type: 'keydown',
 		target: document,
 		listener: (event: KeyboardEvent) => {
-			if (this.hasFocus === false) {
+			if (!this.hasFocus) {
 				return
 			}
+			console.log('THIS HAS FOCUS?', `[FocusController]=${this.focusController.focused}`, `[ForceFocus]=${this.forceFocused}`, this.host)
 
 			if (event.ctrlKey || event.shiftKey) {
 				return
